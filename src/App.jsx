@@ -1,13 +1,22 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, Suspense, lazy } from 'react';
 import "./App.css";
 import ResponsiveContainer from './components/ResponsiveContainer';
-import LineChart from './components/LineChart';
-import BarChart from './components/BarChart';
-import PieChart from './components/PieChart';
-import AreaChart from './components/AreaChart';
-import ScatterPlot from './components/ScatterPlot';
+import LoadingSpinner from './components/LoadingSpinner';
+import ChartWrapper from './components/ChartWrapper';
+import ErrorBoundary from './components/ErrorBoundary';
 import Tooltip from './components/Tooltip';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import Features from './components/Features';
+import Footer from './components/Footer';
+import Header from './components/Header';
+import Hero from './components/Hero';
+
+// Lazy load chart components
+const LineChart = lazy(() => import('./components/LineChart'));
+const BarChart = lazy(() => import('./components/BarChart'));
+const PieChart = lazy(() => import('./components/PieChart'));
+const AreaChart = lazy(() => import('./components/AreaChart'));
+const ScatterPlot = lazy(() => import('./components/ScatterPlot'));
 
 const lineData = [
   { x: 0, y: 10 },
@@ -90,215 +99,168 @@ const ChartApp = () => {
   }, []);
 
   return (
-    <div 
+    <div
       className={`min-h-screen ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-gradient-to-b from-gray-50 to-gray-100'}`}
       onWheel={handleWheel}
       onMouseMove={handleMouseMove}
       onMouseDown={handlePan}
     >
       {/* Header */}
-      <header className={`${currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className={`text-3xl font-bold ${currentTheme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}>
-              ChartMaster
-            </h1>
-            <div className="flex items-center space-x-6">
-              <nav className="space-x-6">
-                <a href="#features" className={`${currentTheme === 'dark' ? 'text-gray-300 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'}`}>Features</a>
-                <a href="#examples" className={`${currentTheme === 'dark' ? 'text-gray-300 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'}`}>Examples</a>
-                <a href="#docs" className={`${currentTheme === 'dark' ? 'text-gray-300 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'}`}>Documentation</a>
-                <a href="https://github.com/TAIJULAMAN/chart" className={`${currentTheme === 'dark' ? 'text-gray-300 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'}`}>GitHub</a>
-              </nav>
-              <button
-                onClick={toggleTheme}
-                className={`p-2 rounded-lg ${currentTheme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}
-              >
-                {currentTheme === 'dark' ? '🌞' : '🌙'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-      {/* <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-blue-600">ChartMaster</h1>
-            <nav className="space-x-6">
-              <a href="#features" className="text-gray-600 hover:text-blue-600">Features</a>
-              <a href="#examples" className="text-gray-600 hover:text-blue-600">Examples</a>
-              <a href="#docs" className="text-gray-600 hover:text-blue-600">Documentation</a>
-              <a href="https://github.com/TAIJULAMAN/chart" className="text-gray-600 hover:text-blue-600">GitHub</a>
-            </nav>
-          </div>
-        </div>
-      </header> */}
+      <Header currentTheme={currentTheme} toggleTheme={toggleTheme} />
 
       {/* Hero Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-            Beautiful Charts Made <span className="text-blue-600">Simple</span>
-          </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-            A powerful, flexible, and easy-to-use charting library built with React and D3.js
-          </p>
-        </div>
-      </section>
+      <Hero />
 
       {/* Features Grid */}
-      <section id="features" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8">Features</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { title: 'Responsive', desc: 'Charts that automatically adapt to any screen size' },
-              { title: 'Customizable', desc: 'Extensive styling options and theming support' },
-              { title: 'Interactive', desc: 'Rich interactions with tooltips and animations' },
-              { title: 'Multiple Chart Types', desc: 'Line, Bar, Area, Pie charts and more' },
-              { title: 'React-Based', desc: 'Built with modern React patterns and hooks' },
-              { title: 'Lightweight', desc: 'Optimized bundle size for better performance' },
-            ].map((feature, i) => (
-              <div key={i} className="p-6 bg-gray-50 rounded-lg">
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h4>
-                <p className="text-gray-600">{feature.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <Features />
 
       {/* Interactive Examples */}
-      <section 
-        id="examples" 
-        className={`py-16 px-4 sm:px-6 lg:px-8 ${currentTheme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}
+      <section
+        id="examples"
+        className={`py-16 px-4 sm:px-6 lg:px-8 ${currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}
       >
         <div className="max-w-7xl mx-auto">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8">Interactive Examples</h3>
+          <h3 className={`text-2xl font-bold ${currentTheme === 'dark' ? 'text-gray-100' : 'text-gray-900'} mb-8`}>Interactive Examples</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Line Chart */}
-            <div className={`${currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg p-6`}>
-              <h4 className="text-lg font-semibold mb-4">Line Chart</h4>
-              <div className="h-[300px]">
-                <ResponsiveContainer>
-                  {({ width, height }) => (
-                    <LineChart
-                      data={lineData}
-                      width={width}
-                      height={height}
-                      xKey="x"
-                      yKey="y"
-                      stroke="#2563eb"
-                    />
-                  )}
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4 text-sm text-gray-600">
-                Smooth transitions and responsive design
-              </div>
-            </div>
+            <ChartWrapper
+              title="Line Chart"
+              description="Interactive line chart with hover effects"
+              theme={currentTheme}
+            >
+              <Suspense fallback={<LoadingSpinner />}>
+                <div className="h-[300px]">
+                  <ResponsiveContainer>
+                    {({ width, height }) => (
+                      <LineChart
+                        data={lineData}
+                        width={width}
+                        height={height}
+                        xKey="x"
+                        yKey="y"
+                        stroke={theme.colors.primary}
+                        onPointHover={setHoveredData}
+                        animate={true}
+                      />
+                    )}
+                  </ResponsiveContainer>
+                </div>
+              </Suspense>
+            </ChartWrapper>
 
             {/* Bar Chart */}
-            <div className={`${currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg p-6`}>
-              <h4 className="text-lg font-semibold mb-4">Bar Chart</h4>
-              <div className="h-[300px]">
-                <ResponsiveContainer>
-                  {({ width, height }) => (
-                    <BarChart
-                      data={barData}
-                      width={width}
-                      height={height}
-                      xKey="category"
-                      yKey="value"
-                      fill="#3b82f6"
-                      onBarHover={setHoveredData}
-                    />
-                  )}
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4 text-sm text-gray-600">
-                Interactive bars with hover effects
-              </div>
-            </div>
+            <ChartWrapper
+              title="Bar Chart"
+              description="Interactive bar chart with hover effects"
+              theme={currentTheme}
+            >
+              <Suspense fallback={<LoadingSpinner />}>
+                <div className="h-[300px]">
+                  <ResponsiveContainer>
+                    {({ width, height }) => (
+                      <BarChart
+                        data={barData}
+                        width={width}
+                        height={height}
+                        xKey="category"
+                        yKey="value"
+                        fill={theme.colors.primary}
+                        onBarHover={setHoveredData}
+                        animate={true}
+                      />
+                    )}
+                  </ResponsiveContainer>
+                </div>
+              </Suspense>
+            </ChartWrapper>
 
             {/* Pie Chart */}
-            <div className={`${currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg p-6`}>
-              <h4 className="text-lg font-semibold mb-4">Pie Chart</h4>
-              <div className="h-[300px]">
-                <ResponsiveContainer>
-                  {({ width, height }) => (
-                    <PieChart
-                      data={pieData}
-                      width={width}
-                      height={height}
-                      valueKey="value"
-                      labelKey="label"
-                      onSliceHover={setHoveredData}
-                    />
-                  )}
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4 text-sm text-gray-600">
-                Dynamic pie slices with labels
-              </div>
-            </div>
+            <ChartWrapper
+              title="Pie Chart"
+              description="Dynamic pie chart with labels"
+              theme={currentTheme}
+            >
+              <Suspense fallback={<LoadingSpinner />}>
+                <div className="h-[300px]">
+                  <ResponsiveContainer>
+                    {({ width, height }) => (
+                      <PieChart
+                        data={pieData}
+                        width={width}
+                        height={height}
+                        valueKey="value"
+                        labelKey="label"
+                        onSliceHover={setHoveredData}
+                        animate={true}
+                      />
+                    )}
+                  </ResponsiveContainer>
+                </div>
+              </Suspense>
+            </ChartWrapper>
 
             {/* Area Chart */}
-            <div className={`${currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg p-6`}>
-              <h4 className="text-lg font-semibold mb-4">Area Chart</h4>
-              <div className="h-[300px]">
-                <ResponsiveContainer>
-                  {({ width, height }) => (
-                    <AreaChart
-                      data={areaData}
-                      width={width}
-                      height={height}
-                      xKey="x"
-                      yKey="y"
-                      fill={theme.colors.primary}
-                      stroke={theme.colors.primary}
-                      onAreaHover={setHoveredData}
-                    />
-                  )}
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4 text-sm text-gray-600">
-                Smooth area chart with gradient fill
-              </div>
-            </div>
+            <ChartWrapper
+              title="Area Chart"
+              description="Smooth area chart with gradient fill"
+              theme={currentTheme}
+            >
+              <Suspense fallback={<LoadingSpinner />}>
+                <div className="h-[300px]">
+                  <ResponsiveContainer>
+                    {({ width, height }) => (
+                      <AreaChart
+                        data={areaData}
+                        width={width}
+                        height={height}
+                        xKey="x"
+                        yKey="y"
+                        fill={theme.colors.primary}
+                        stroke={theme.colors.primary}
+                        onAreaHover={setHoveredData}
+                        animate={true}
+                      />
+                    )}
+                  </ResponsiveContainer>
+                </div>
+              </Suspense>
+            </ChartWrapper>
 
             {/* Scatter Plot */}
-            <div className={`${currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg p-6`}>
-              <h4 className="text-lg font-semibold mb-4">Scatter Plot</h4>
-              <div className="h-[300px]">
-                <ResponsiveContainer>
-                  {({ width, height }) => (
-                    <ScatterPlot
-                      data={scatterData}
-                      width={width}
-                      height={height}
-                      xKey="x"
-                      yKey="y"
-                      groupKey="group"
-                      colors={[theme.colors.primary, theme.colors.secondary]}
-                      onPointHover={setHoveredData}
-                    />
-                  )}
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4 text-sm text-gray-600">
-                Interactive scatter plot with grouping
-              </div>
-            </div>
+            <ChartWrapper
+              title="Scatter Plot"
+              description="Interactive scatter plot with grouping"
+              theme={currentTheme}
+            >
+              <Suspense fallback={<LoadingSpinner />}>
+                <div className="h-[300px]">
+                  <ResponsiveContainer>
+                    {({ width, height }) => (
+                      <ScatterPlot
+                        data={scatterData}
+                        width={width}
+                        height={height}
+                        xKey="x"
+                        yKey="y"
+                        groupKey="group"
+                        colors={[theme.colors.primary, theme.colors.secondary]}
+                        onPointHover={setHoveredData}
+                        animate={true}
+                      />
+                    )}
+                  </ResponsiveContainer>
+                </div>
+              </Suspense>
+            </ChartWrapper>
 
             {/* Chart Customization */}
-            <div className={`${currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg p-6`}>
-              <h4 className="text-lg font-semibold mb-4">Customization</h4>
+            <ChartWrapper
+              title="Customization"
+              description="All charts support extensive customization options"
+              theme={currentTheme}
+            >
               <div className="space-y-4">
-                <p className="text-sm text-gray-600">
-                  All charts support extensive customization options:
-                </p>
-                <ul className="list-disc list-inside text-sm text-gray-600 space-y-2">
+                <ul className={`list-disc list-inside text-sm ${currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'} space-y-2`}>
                   <li>Custom colors and themes</li>
                   <li>Adjustable margins and padding</li>
                   <li>Configurable animations</li>
@@ -306,21 +268,22 @@ const ChartApp = () => {
                   <li>Responsive sizing</li>
                 </ul>
               </div>
-            </div>
+            </ChartWrapper>
           </div>
 
           {/* Tooltip */}
           <Tooltip
+            show={hoveredData !== null}
+            x={tooltipPos.x}
+            y={tooltipPos.y}
             content={
               hoveredData && (
                 <div>
-                  {hoveredData.category || hoveredData.label}: 
+                  {hoveredData.category || hoveredData.label}:
                   {hoveredData.value || hoveredData.y}
                 </div>
               )
             }
-            x={tooltipPos.x}
-            y={tooltipPos.y}
           />
         </div>
       </section>
@@ -329,19 +292,19 @@ const ChartApp = () => {
       <section id="docs" className={`py-16 px-4 sm:px-6 lg:px-8 ${currentTheme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto">
           <h3 className={`text-2xl font-bold ${currentTheme === 'dark' ? 'text-gray-100' : 'text-gray-900'} mb-8`}>Documentation</h3>
-          
+
           {/* Quick Start */}
           <div className="mb-12">
-            <h4 className="text-xl font-semibold mb-4">Quick Start</h4>
-            <div className="bg-gray-900 rounded-lg p-6 overflow-x-auto mb-4">
-              <pre className="text-gray-300">
-                <code>{`npm install chartmaster
+            <h4 className={`text-xl font-semibold mb-4 ${currentTheme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>Quick Start</h4>
+            <div className={`${currentTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'} p-4 rounded-lg`}>
+              <pre className={`text-sm ${currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                {`npm install @chartmaster/core
+// or
+yarn add @chartmaster/core
 
-import { LineChart, BarChart, PieChart, ResponsiveContainer } from 'chartmaster';
+import { LineChart, BarChart, PieChart, ResponsiveContainer } from '@chartmaster/core';
 
-function App() {
-  const [hoveredData, setHoveredData] = useState(null);
-
+const Example = () => {
   return (
     <ResponsiveContainer>
       {({ width, height }) => (
@@ -356,7 +319,7 @@ function App() {
       )}
     </ResponsiveContainer>
   );
-}`}</code>
+};`}
               </pre>
             </div>
           </div>
@@ -427,33 +390,10 @@ function App() {
       </section>
 
       {/* Footer */}
-      <footer className={`${currentTheme === 'dark' ? 'bg-gray-950' : 'bg-gray-900'} text-gray-300 py-12 px-4 sm:px-6 lg:px-8`}>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <h4 className="text-lg font-semibold mb-4">ChartMaster</h4>
-            <p className="text-gray-400">Beautiful, responsive charts for modern web applications</p>
-          </div>
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Links</h4>
-            <ul className="space-y-2">
-              <li><a href="#features" className="hover:text-blue-400">Features</a></li>
-              <li><a href="#examples" className="hover:text-blue-400">Examples</a></li>
-              <li><a href="#docs" className="hover:text-blue-400">Documentation</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Connect</h4>
-            <ul className="space-y-2">
-              <li><a href="https://github.com/TAIJULAMAN/chart" className="hover:text-blue-400">GitHub</a></li>
-              <li><a href="#" className="hover:text-blue-400">Twitter</a></li>
-              <li><a href="#" className="hover:text-blue-400">Discord</a></li>
-            </ul>
-          </div>
-        </div>
-      </footer>
+      <Footer currentTheme={currentTheme} />
     </div>
   );
-}
+};
 
 const App = () => {
   return (
